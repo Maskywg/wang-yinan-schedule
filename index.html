@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>王胤安的週課表｜台大化學系</title>
+<meta name="description" content="臺大化學系大一 王胤安 互動式週課表，內建空堂與衝堂檢查工具">
+
+<meta property="og:title" content="王胤安的週課表｜台大化學系">
+<meta property="og:description" content="互動式週課表與空堂 / 衝堂檢查工具，一眼掌握每週上課與空檔時間">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_TW">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1F3A5F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="胤安課表">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FAF8F1;
+    --surface:#FFFFFF;
+    --ink:#1F2D3A;
+    --muted:#788393;
+    --border:#E6E0D2;
+    --navy:#1F3A5F;
+    --teal:#3F8F82;
+    --gold:#B08D2B;
+    --danger:#C1443D;
+    --ok:#3F8F5F;
+
+    --c-eng-a:#6E93BC; --c-eng-bg:#EEF3F8;
+    --c-phy-a:#3F8F82; --c-phy-bg:#E9F4F1;
+    --c-chem-a:#B08D2B; --c-chem-bg:#F7F1E0;
+    --c-calc-a:#7A5C82; --c-calc-bg:#F3EEF5;
+    --c-psy-a:#B5623A;  --c-psy-bg:#F8EEE7;
+    --c-pe-a:#6E8B5D;   --c-pe-bg:#EFF3EA;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans TC", sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:22px 14px 60px;
+  }
+
+  .page{max-width:920px;margin:0 auto;}
+
+  /* ---------- ID card header ---------- */
+  .id-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px 20px 20px 18px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(31,45,58,0.04);
+  }
+  .id-card::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:6px;
+    background:linear-gradient(180deg,var(--navy),var(--teal));
+  }
+  .seal{
+    flex:0 0 auto;
+    width:58px; height:58px;
+    border-radius:50%;
+    border:2.5px solid var(--teal);
+    color:var(--teal);
+    font-family:"Noto Serif TC", serif;
+    font-weight:700;
+    font-size:13px;
+    line-height:1.25;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    transform:rotate(-8deg);
+    letter-spacing:1px;
+    opacity:0.85;
+  }
+  .id-info h1{
+    font-family:"Noto Serif TC", serif;
+    font-weight:700;
+    font-size:20px;
+    margin:0 0 4px;
+    color:var(--navy);
+  }
+  .id-info .meta{
+    margin:0;
+    font-size:13px;
+    color:var(--muted);
+    font-family:"IBM Plex Mono", monospace;
+    letter-spacing:0.2px;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin:18px 0 14px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:11px 10px;
+    border-radius:11px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--muted);
+    font-family:"Noto Sans TC", sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--navy);
+    color:#fff;
+    border-color:var(--navy);
+  }
+  .tab-panel{display:none; animation:fadeIn .25s ease;}
+  .tab-panel.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- Legend ---------- */
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .legend-chip{
+    font-size:12px;
+    font-weight:500;
+    padding:5px 10px 5px 8px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:var(--ink);
+    background:var(--surface);
+    border:1px solid var(--border);
+  }
+  .legend-chip .dot{width:8px; height:8px; border-radius:50%;}
+
+  /* ---------- Grid ---------- */
+  .grid-wrap{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow-x:auto;
+    padding:10px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: 58px repeat(6, minmax(96px, 1fr));
+    grid-auto-rows:42px;
+    min-width:660px;
+  }
+  .grid .head{
+    position:sticky; top:0;
+    background:var(--surface);
+    font-size:12px;
+    font-weight:700;
+    color:var(--navy);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 2px;
+    border-bottom:1.5px solid var(--border);
+  }
+  .grid .time-label{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10px;
+    color:var(--muted);
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-end;
+    padding:3px 6px 0 0;
+    border-top:1px solid #F1EDE1;
+    white-space:nowrap;
+  }
+  .grid .time-label.thick{border-top:1px solid var(--border);}
+
+  .course-cell{
+    margin:2px 3px;
+    border-radius:9px;
+    padding:6px 8px;
+    font-size:12px;
+    line-height:1.3;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    border-left:3px solid transparent;
+    overflow:hidden;
+  }
+  .course-cell .title{font-weight:700;}
+  .course-cell .note{
+    font-size:10px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .type-eng{background:var(--c-eng-bg); border-left-color:var(--c-eng-a); color:#2C4762;}
+  .type-phy{background:var(--c-phy-bg); border-left-color:var(--c-phy-a); color:#215048;}
+  .type-chem{background:var(--c-chem-bg); border-left-color:var(--c-chem-a); color:#5C4A18;}
+  .type-calc{background:var(--c-calc-bg); border-left-color:var(--c-calc-a); color:#4A3750;}
+  .type-psy{background:var(--c-psy-bg); border-left-color:var(--c-psy-a); color:#6E3A22;}
+  .type-pe{background:var(--c-pe-bg); border-left-color:var(--c-pe-a); color:#41522F;}
+
+  /* ---------- Checker tab ---------- */
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 10px;
+    text-align:center;
+  }
+  .stat-card .num{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+    font-size:22px;
+    color:var(--navy);
+  }
+  .stat-card .lbl{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .day-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .day-card .day-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .day-card .day-name{
+    font-family:"Noto Serif TC", serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--navy);
+  }
+  .status-pill{
+    font-size:12px;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:999px;
+  }
+  .status-ok{background:#E9F5EE; color:var(--ok);}
+  .status-bad{background:#FBEAE8; color:var(--danger);}
+
+  .free-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:4px;
+  }
+  .free-chip{
+    font-size:12px;
+    font-family:"IBM Plex Mono", monospace;
+    background:#F3F6F2;
+    border:1px solid #DCE7DA;
+    color:#3E5A44;
+    padding:4px 9px;
+    border-radius:8px;
+  }
+  .free-empty{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .conflict-detail{
+    margin-top:8px;
+    font-size:12px;
+    color:var(--danger);
+    background:#FBEAE8;
+    border-radius:8px;
+    padding:8px 10px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    margin-top:24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="id-card">
+    <div class="seal">選課<br>已確認</div>
+    <div class="id-info">
+      <h1>王胤安 的週課表</h1>
+      <p class="meta">B15203041・化學系・大一</p>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="schedule">週課表</button>
+    <button class="tab-btn" data-tab="checker">空堂 / 衝堂檢查</button>
+  </nav>
+
+  <section id="schedule" class="tab-panel active">
+    <div class="legend" id="legend"></div>
+    <div class="grid-wrap">
+      <div class="grid" id="scheduleGrid"></div>
+    </div>
+  </section>
+
+  <section id="checker" class="tab-panel">
+    <div class="stats-row" id="statsRow"></div>
+    <div id="dayCards"></div>
+  </section>
+
+  <footer>製作人：Masky Wang</footer>
+</div>
+
+<script>
+  const periods = [
+    "07:10-08:00","08:10-09:00","09:10-10:00","10:20-11:10","11:20-12:10",
+    "12:20-13:10","13:20-14:10","14:20-15:10","15:30-16:20","16:30-17:20",
+    "17:30-18:20","18:25-19:15","19:20-20:10","20:15-21:05","21:10-22:00"
+  ];
+  const dayNames = ["一","二","三","四","五","六"];
+
+  // day: 0=一 ... 5=六
+  const courses = [
+    {day:0, periods:[3,4,5], title:"大學英文：聽說讀寫綜合訓練一", type:"eng"},
+    {day:0, periods:[8,9],   title:"健康體適能", type:"pe"},
+
+    {day:1, periods:[3,4],   title:"普通物理學甲上", type:"phy"},
+    {day:1, periods:[6,7,8], title:"化學實驗一", type:"chem"},
+
+    {day:2, periods:[3,4],   title:"普通化學一", type:"chem"},
+    {day:2, periods:[8,9,10],title:"微積分1 / 微積分2", note:"密集課程・依教學週次分班", type:"calc"},
+
+    {day:3, periods:[3,4],   title:"普通物理學甲上", type:"phy"},
+    {day:3, periods:[7,8,9], title:"普通物理學實驗一", type:"phy"},
+
+    {day:4, periods:[1,2],   title:"微積分1 / 微積分2", note:"密集課程・依教學週次分班", type:"calc"},
+    {day:4, periods:[3,4],   title:"普通化學一", type:"chem"},
+    {day:4, periods:[6,7,8], title:"普通心理學", type:"psy"},
+  ];
+
+  const legendData = [
+    {type:"eng",  label:"英文", color:"var(--c-eng-a)"},
+    {type:"phy",  label:"物理", color:"var(--c-phy-a)"},
+    {type:"chem", label:"化學", color:"var(--c-chem-a)"},
+    {type:"calc", label:"微積分", color:"var(--c-calc-a)"},
+    {type:"psy",  label:"心理學", color:"var(--c-psy-a)"},
+    {type:"pe",   label:"體育", color:"var(--c-pe-a)"},
+  ];
+
+  // ---------- render legend ----------
+  const legendEl = document.getElementById("legend");
+  legendData.forEach(l=>{
+    const chip = document.createElement("div");
+    chip.className = "legend-chip";
+    chip.innerHTML = `<span class="dot" style="background:${l.color}"></span>${l.label}`;
+    legendEl.appendChild(chip);
+  });
+
+  // ---------- render grid ----------
+  const grid = document.getElementById("scheduleGrid");
+
+  // header row
+  const corner = document.createElement("div");
+  corner.className = "head";
+  grid.appendChild(corner);
+  dayNames.forEach(d=>{
+    const h = document.createElement("div");
+    h.className = "head";
+    h.textContent = "星期" + d;
+    grid.appendChild(h);
+  });
+
+  // time labels column + empty day cells (as background grid lines)
+  periods.forEach((label, pIdx)=>{
+    const t = document.createElement("div");
+    t.className = "time-label" + (pIdx===3 || pIdx===8 ? " thick" : "");
+    t.textContent = label;
+    t.style.gridColumn = "1";
+    t.style.gridRow = (pIdx+2);
+    grid.appendChild(t);
+  });
+
+  // course cells (spanning multiple rows)
+  courses.forEach(c=>{
+    const cell = document.createElement("div");
+    cell.className = "course-cell type-" + c.type;
+    cell.innerHTML = `<div class="title">${c.title}</div>` + (c.note ? `<div class="note">${c.note}</div>` : "");
+    const startRow = c.periods[0] + 2;
+    const span = c.periods.length;
+    cell.style.gridColumn = (c.day + 2);
+    cell.style.gridRow = `${startRow} / span ${span}`;
+    grid.appendChild(cell);
+  });
+
+  // ---------- conflict + free-period analysis ----------
+  const occupancy = {}; // "day-period" -> [courses]
+  courses.forEach(c=>{
+    c.periods.forEach(p=>{
+      const key = c.day + "-" + p;
+      if(!occupancy[key]) occupancy[key] = [];
+      occupancy[key].push(c.title);
+    });
+  });
+
+  function freeRanges(day){
+    const used = new Set();
+    courses.filter(c=>c.day===day).forEach(c=>c.periods.forEach(p=>used.add(p)));
+    const ranges = [];
+    let start = null;
+    for(let p=0;p<periods.length;p++){
+      if(!used.has(p)){
+        if(start===null) start = p;
+      } else {
+        if(start!==null){ ranges.push([start, p-1]); start=null; }
+      }
+    }
+    if(start!==null) ranges.push([start, periods.length-1]);
+    return ranges;
+  }
+
+  function rangeLabel(r){
+    const startLabel = periods[r[0]].split("-")[0];
+    const endLabel = periods[r[1]].split("-")[1];
+    const count = r[1]-r[0]+1;
+    return `${startLabel}–${endLabel}（${count}節）`;
+  }
+
+  let totalFreePeriods = 0;
+  let totalConflicts = 0;
+  const dayReports = [];
+
+  for(let d=0; d<6; d++){
+    const ranges = freeRanges(d);
+    ranges.forEach(r=> totalFreePeriods += (r[1]-r[0]+1));
+
+    const conflicts = [];
+    for(let p=0;p<periods.length;p++){
+      const key = d+"-"+p;
+      if(occupancy[key] && occupancy[key].length>1){
+        conflicts.push({period:p, titles:[...new Set(occupancy[key])]});
+      }
+    }
+    if(conflicts.length) totalConflicts += conflicts.length;
+
+    dayReports.push({day:d, ranges, conflicts});
+  }
+
+  // ---------- render stats ----------
+  const statsRow = document.getElementById("statsRow");
+  const totalCoursePeriods = courses.reduce((sum,c)=>sum+c.periods.length,0);
+  const stats = [
+    {num: totalCoursePeriods, lbl:"每週上課節數"},
+    {num: totalFreePeriods, lbl:"每週空堂節數"},
+    {num: totalConflicts, lbl:"偵測到衝堂"},
+  ];
+  stats.forEach(s=>{
+    const el = document.createElement("div");
+    el.className = "stat-card";
+    el.innerHTML = `<div class="num">${s.num}</div><div class="lbl">${s.lbl}</div>`;
+    statsRow.appendChild(el);
+  });
+
+  // ---------- render day cards ----------
+  const dayCardsEl = document.getElementById("dayCards");
+  dayReports.forEach(r=>{
+    const card = document.createElement("div");
+    card.className = "day-card";
+
+    const hasConflict = r.conflicts.length>0;
+    const pillHtml = hasConflict
+      ? `<span class="status-pill status-bad">⚠ 有衝堂</span>`
+      : `<span class="status-pill status-ok">✓ 無衝堂</span>`;
+
+    let freeHtml = "";
+    if(r.ranges.length===0){
+      freeHtml = `<div class="free-empty">本日整天都排滿課程，沒有空堂。</div>`;
+    } else if(r.ranges.length===1 && r.ranges[0][1]-r.ranges[0][0]+1===periods.length){
+      freeHtml = `<div class="free-chip">全天空堂</div>`;
+    } else {
+      freeHtml = `<div class="free-list">` + r.ranges.map(rg=>`<div class="free-chip">${rangeLabel(rg)}</div>`).join("") + `</div>`;
+    }
+
+    let conflictHtml = "";
+    if(hasConflict){
+      conflictHtml = `<div class="conflict-detail">` + r.conflicts.map(c=>
+        `第${c.period+1}節（${periods[c.period]}）：${c.titles.join("、")} 時間重疊`
+      ).join("<br>") + `</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="day-top">
+        <div class="day-name">星期${dayNames[r.day]}</div>
+        ${pillHtml}
+      </div>
+      ${freeHtml}
+      ${conflictHtml}
+    `;
+    dayCardsEl.appendChild(card);
+  });
+
+  // ---------- tabs ----------
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  // ---------- PWA service worker ----------
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
+    });
+  }
+</script>
+
+</body>
+</html>

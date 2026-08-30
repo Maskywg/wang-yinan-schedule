@@ -1,0 +1,17 @@
+{
+  "name": "王胤安的週課表",
+  "short_name": "胤安課表",
+  "description": "台大化學系大一王胤安的互動式週課表，內建空堂與衝堂檢查工具",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FAF8F1",
+  "theme_color": "#1F3A5F",
+  "orientation": "portrait-primary",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
